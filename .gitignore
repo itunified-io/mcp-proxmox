@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.mcpregistry_*
+.env
+*.pem
+*.key
+coverage/

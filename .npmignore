@@ -1,0 +1,13 @@
+src/
+tests/
+.claude/
+.github/
+.mcpregistry_*
+.env
+*.pem
+*.key
+tsconfig.json
+vitest.config.ts
+docs/
+scripts/
+.gitignore
