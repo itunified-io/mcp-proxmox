@@ -1,0 +1,12 @@
+{
+  "name": "io.github.itunified-io/proxmox",
+  "display_name": "Proxmox VE",
+  "description": "MCP server for Proxmox VE — read-only cluster, VM, container, storage, and network monitoring via PVE REST API",
+  "icon": "",
+  "repository": "https://github.com/itunified-io/mcp-proxmox",
+  "npm_package": "@itunified.io/mcp-proxmox",
+  "version": "2026.4.10-1",
+  "tools_count": 44,
+  "transport": ["stdio"],
+  "categories": ["infrastructure", "virtualization", "monitoring"]
+}
