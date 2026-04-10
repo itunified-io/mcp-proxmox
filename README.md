@@ -1,7 +1,6 @@
 # mcp-proxmox
 
-<!-- Glama badges will appear here after registry submission -->
-<!-- [![Glama](https://glama.ai/mcp/servers/badge)](https://glama.ai/mcp/servers/...) -->
+[![mcp-proxmox MCP server](https://glama.ai/mcp/servers/itunified-io/mcp-proxmox/badges/card.svg)](https://glama.ai/mcp/servers/itunified-io/mcp-proxmox)
 
 MCP server for **Proxmox VE** — read-only cluster, VM, container, storage, and network monitoring via the PVE REST API v2.
 
