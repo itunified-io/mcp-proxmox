@@ -56,7 +56,21 @@ describe("handleCephTool", () => {
     expect(result.content[0].text).toContain("Ceph must be installed and configured");
   });
 
-  it("proxmox_ceph_status — rethrows non-501 errors", async () => {
+  it("proxmox_ceph_status — returns friendly message on 500 (binary not installed)", async () => {
+    vi.mocked(mockClient.get).mockRejectedValueOnce(
+      new ProxmoxApiError("binary not installed: /usr/bin/ceph", "GET /nodes/pve01/ceph/status", 500),
+    );
+
+    const result = await handleCephTool(
+      "proxmox_ceph_status",
+      { node: "pve01" },
+      mockClient,
+    );
+
+    expect(result.content[0].text).toContain("Ceph is not available on node 'pve01'");
+  });
+
+  it("proxmox_ceph_status — rethrows non-500/501 errors", async () => {
     vi.mocked(mockClient.get).mockRejectedValueOnce(
       new ProxmoxApiError("Unauthorized", "GET /nodes/pve01/ceph/status", 403),
     );

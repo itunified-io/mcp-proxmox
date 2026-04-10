@@ -68,7 +68,7 @@ export async function handleCephTool(
         const data = await client.get<PveCephStatus>(`/nodes/${node}/ceph/status`);
         return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
       } catch (err) {
-        if (err instanceof ProxmoxApiError && err.status === 501) {
+        if (err instanceof ProxmoxApiError && (err.status === 500 || err.status === 501)) {
           return {
             content: [
               {
@@ -87,7 +87,7 @@ export async function handleCephTool(
         const data = await client.get<Record<string, unknown>>(`/nodes/${node}/ceph/osd`);
         return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
       } catch (err) {
-        if (err instanceof ProxmoxApiError && err.status === 501) {
+        if (err instanceof ProxmoxApiError && (err.status === 500 || err.status === 501)) {
           return {
             content: [
               {
@@ -106,7 +106,7 @@ export async function handleCephTool(
         const data = await client.get<Record<string, unknown>[]>(`/nodes/${node}/ceph/pool`);
         return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
       } catch (err) {
-        if (err instanceof ProxmoxApiError && err.status === 501) {
+        if (err instanceof ProxmoxApiError && (err.status === 500 || err.status === 501)) {
           return {
             content: [
               {
@@ -125,7 +125,7 @@ export async function handleCephTool(
         const data = await client.get<Record<string, unknown>[]>(`/nodes/${node}/ceph/mon`);
         return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
       } catch (err) {
-        if (err instanceof ProxmoxApiError && err.status === 501) {
+        if (err instanceof ProxmoxApiError && (err.status === 500 || err.status === 501)) {
           return {
             content: [
               {
