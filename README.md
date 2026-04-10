@@ -48,6 +48,86 @@ In the Proxmox web UI:
 2. Create a token for a user with at least **PVEAuditor** role
 3. Copy the token secret (shown only once)
 
+### HashiCorp Vault Integration (Optional)
+
+mcp-proxmox supports **opportunistic secret loading from HashiCorp Vault** via AppRole authentication. When configured, it fetches `PROXMOX_API_URL`, `PROXMOX_TOKEN_ID`, and `PROXMOX_TOKEN_SECRET` from a KV v2 path — so you never need to put PVE credentials in environment variables or config files.
+
+**How it works:**
+
+1. On startup, the server checks for `NAS_VAULT_ADDR`, `NAS_VAULT_ROLE_ID`, and `NAS_VAULT_SECRET_ID` in the environment
+2. If all three are set, it logs in via AppRole and reads the configured KV v2 path
+3. It populates `PROXMOX_*` env vars from the Vault secret — but only for vars not already set
+4. If Vault is not configured or unreachable, the server silently falls back to env vars
+
+**Precedence:** Explicit env vars → Vault → (error if nothing set)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NAS_VAULT_ADDR` | Yes* | Vault server address (e.g., `https://vault.example.com:8200`) |
+| `NAS_VAULT_ROLE_ID` | Yes* | AppRole role ID for this server |
+| `NAS_VAULT_SECRET_ID` | Yes* | AppRole secret ID for this server |
+| `NAS_VAULT_KV_MOUNT` | No | KV v2 mount path (default: `kv`) |
+
+\* Only required if using Vault. Without these, the server uses `PROXMOX_*` env vars directly.
+
+**Vault KV v2 secret structure:**
+
+```
+# Path: kv/your/proxmox/secret
+{
+  "url": "https://your-proxmox.example.com:8006",
+  "api_token_id": "admin@pam!monitoring",
+  "api_token_secret": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+}
+```
+
+**Key mapping:** `url` → `PROXMOX_API_URL`, `api_token_id` → `PROXMOX_TOKEN_ID`, `api_token_secret` → `PROXMOX_TOKEN_SECRET`
+
+**Vault setup steps:**
+
+1. Write PVE credentials to a KV v2 path:
+   ```bash
+   vault kv put kv/your/proxmox/secret \
+     url="https://your-proxmox.example.com:8006" \
+     api_token_id="admin@pam!monitoring" \
+     api_token_secret="your-token-secret"
+   ```
+
+2. Create a read-only policy:
+   ```hcl
+   path "kv/data/your/proxmox/secret" {
+     capabilities = ["read"]
+   }
+   ```
+
+3. Create an AppRole and get credentials:
+   ```bash
+   vault write auth/approle/role/mcp-proxmox \
+     token_policies="mcp-proxmox" token_ttl=1h
+   vault read auth/approle/role/mcp-proxmox/role-id
+   vault write -f auth/approle/role/mcp-proxmox/secret-id
+   ```
+
+4. Configure the server with Vault env vars (no PVE creds needed):
+   ```json
+   {
+     "mcpServers": {
+       "proxmox": {
+         "command": "npx",
+         "args": ["@itunified.io/mcp-proxmox"],
+         "env": {
+           "NAS_VAULT_ADDR": "https://vault.example.com:8200",
+           "NAS_VAULT_ROLE_ID": "your-role-id",
+           "NAS_VAULT_SECRET_ID": "your-secret-id",
+           "PROXMOX_VERIFY_SSL": "false"
+         }
+       }
+     }
+   }
+   ```
+
+> **Note:** `PROXMOX_VERIFY_SSL` and `PROXMOX_TIMEOUT` are not loaded from Vault — set them via env vars if needed.
+
 ## Claude Desktop Configuration
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
